@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "http": "^0.0.1-security",
+    "http-proxy-agent": "^5.0.0",
+    "socks-proxy-agent": "^6.2.0-beta.0",
+    "ws": "^8.6.0"
+  }
+}
