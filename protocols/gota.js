@@ -1,3 +1,6 @@
+/*
+    needs good proxies
+*/
 const Writer = require('../core/writer')
 const WebSocket = require('ws')
 const {SocksProxyAgent} = require('socks-proxy-agent');

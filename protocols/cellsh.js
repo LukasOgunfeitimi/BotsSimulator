@@ -1,3 +1,6 @@
+/*
+    needs good proxies
+*/
 const WebSocket = require('ws')
 const request = require('request')
 const {SocksProxyAgent} = require('socks-proxy-agent');

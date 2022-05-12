@@ -57,15 +57,6 @@ class bot {
                     this.send(buffer.buffer)
                 }, 1000);
                 break
-                case "https://agarr.live/":
-                    this.sendVersions(5, 123456789)
-                    var buffer = new Writer((botName.length << 1) + 1)
-                    buffer.Uint8(0)
-                    buffer.string8(botName, true)
-                    setInterval(() => {
-                        this.send(buffer.buffer)
-                    }, 1000);
-                    break
             case "http://mobilemoti.webcrow.jp":
                 this.sendVersions(5, 1)
                 var buffer = new Writer((botName.length << 1) + 9)

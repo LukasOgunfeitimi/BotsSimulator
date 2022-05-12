@@ -28,9 +28,8 @@ class user {
                 });
             })
             */
-            request('https://api.proxyscrape.com?request=getproxies&proxytype=socks4&timeout=10000&country=all', (err, req, body) => {
+            request('https://api.proxyscrape.com?request=getproxies&proxytype=socks5&timeout=10000&country=all', (err, req, body) => {
                 body.replace(/\r/g, '').split('\n').forEach((proxy, i) => {
-                    //if (i > 55555) return
                     setTimeout(() => {
                         this.start(proxy)
                         setTimeout(() => {

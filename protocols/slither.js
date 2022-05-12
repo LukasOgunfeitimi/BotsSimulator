@@ -1,13 +1,9 @@
 const WebSocket = require('ws');
-const Socks = require('socks');
-const request = require('request');
 const {SocksProxyAgent} = require('socks-proxy-agent');
-var bots = [];
 process.on('uncaughtException', function(err) {
     console.log(err);
 });
 var xPos, yPos = 0
-
     class test {
         constructor(user, proxy) {
             this.socket = null;
