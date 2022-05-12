@@ -1,3 +1,22 @@
+// ==UserScript==
+// @name         lukas
+// @namespace    xD
+// @version      47
+// @description  The best bots for popular agar.io clone games.
+// @author       lukas
+// @match        *.imsolo.pro/*
+// @match        *.de.agar.bio/*
+// @match        *.bublex.io/*
+// @match        *.slither.io/*
+// @match        *.agarr.live/*
+// @match        *.agar.live/*
+// @match        *.cirlzgame.tk/*
+// @match        *.cell.sh/*
+// @match        *.ryuten.io/*
+// @run-at       document-start
+// @grant        none
+// ==/UserScript==
+
 let clientIP = 'ws://127.0.0.1:8083/';
 var test
 
@@ -39,6 +58,7 @@ class Client {
             box.click();
             box.addEventListener('click', (event) => {
                 if (box.style.backgroundColor === 'red') {
+                    console.log(this.gameServer)
                     box.style.backgroundColor = 'green'
                     if (this.gameServer !== undefined) {
                         this.send(JSON.stringify({
@@ -47,14 +67,6 @@ class Client {
                             server: this.gameServer
                         }));
                     }
-                    setInterval(() => {
-                            if (this.data) {
-                                this.send(JSON.stringify({
-                                    type: 'mouse',
-                                    data: this.data
-                                }))
-                            }
-                        }, 40)
                         // }
                 } else {
                     box.style.backgroundColor = 'red'
@@ -67,7 +79,15 @@ class Client {
         }, 2000);
     }
     onopen() {
+        this.ws.onclose = this.onclose.bind(this)
         this.log('Client: Success connecting.');
+        setInterval(() => {
+            this.send(JSON.stringify({
+                type: 'mouse',
+                x: this.x,
+                y : this.y
+            }))
+        }, 40)
         /*
         setInterval(()=>{
             this.send(JSON.stringify({
@@ -78,7 +98,8 @@ class Client {
         },100)
         */
         this.startMoving()
-        //this.generateTokens();
+       // this.generateTokens();
+        var box = document.getElementById('box')
         document.getElementById('box').childNodes[0].nodeValue = 'connected'
         document.querySelector('.circle-loader').classList.toggle('load-complete');
         document.querySelector('.checkmark').style.display = ''
@@ -161,10 +182,32 @@ class Client {
             else if (pkt instanceof DataView) pkt = pkt;
             else pkt = new DataView(pkt.buffer);
             if (test.gameServer !== this.url) test.gameServer = this.url
+            /*
             switch (pkt.getUint8(0, true)) {
+                case 2:
                 case 16:
                     test.data = String.fromCharCode.apply(null, new Uint8Array(pkt.buffer));
+                    test.x = pkt.getFloat64(1, true)
+                    test.y = pkt.getFloat64(9, true)
 
+            }
+            */
+        }
+
+        DataView.prototype.realSet = DataView.prototype.setUint16
+        DataView.prototype.setUint16 = function() {
+            var type = this.getUint8()
+            var offset = type === 30 ? 2 : type === 41 ? 1 : 0
+            var bufferOffset = arguments[0]
+            var buffer = arguments[1]
+            this.realSet(bufferOffset, buffer, true)
+            switch (bufferOffset) {
+                case offset:
+                    test.x = buffer | 0
+                    break
+                case offset += 2:
+                    test.y = buffer | 0
+                    break
             }
         }
     }

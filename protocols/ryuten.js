@@ -32,7 +32,7 @@ class bot {
         this.ws = user.ws
         this.proxy = proxy;
         this.authed = 0
-        this.randomtag = '555'// String(Math.floor(Math.random()*(999-100+1)+100))
+        this.randomtag = String(Math.floor(Math.random()*(999-100+1)+100))
         this.ryuten = new nicewasm()
         this.lastmessage = null
         this.connect()

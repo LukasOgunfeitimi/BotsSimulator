@@ -1,6 +1,6 @@
 const fetch = require('node-fetch')
 const WebSocket = require('ws')
-const SocksProxyAgent = require('socks-proxy-agent')
+const {SocksProxyAgent} = require('socks-proxy-agent')
 class bot {
     constructor(user, proxy) {
         this.socket = null;
