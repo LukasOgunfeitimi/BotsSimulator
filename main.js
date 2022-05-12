@@ -40,12 +40,6 @@ class user {
                 });
             });
             
-           /*
-            request('https://api.proxyscrape.com?request=getproxies&proxytype=socks5&timeout=10000&country=all', (err, req, body) => {
-                body.replace(/\r/g, '').split('\n').filter(p => p.length > 1).forEach(proxy => this.bots.push(proxy))
-            });
-            */
-            
     }
     start(proxy) {
         switch (this.origin) {
