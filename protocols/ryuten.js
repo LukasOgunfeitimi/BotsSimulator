@@ -1,7 +1,12 @@
+/*
+    a lot of integrity checks
+    bots dont last long
+    https://media.discordapp.net/attachments/833119812812144710/974395499526361218/unknown.png
+*/
 const WebSocket = require('ws')
 const { SocksProxyAgent } = require('socks-proxy-agent');
 const Writer = require('../core/writer')
-class nicewasm { // don't touch
+class nicewasm {
     constructor() {
       this.keys = []
     }
@@ -75,20 +80,20 @@ class bot {
             var msg = new DataView(message.data)
             switch(msg.getUint8(0)) {
                 case 10:
-                this.send([42, 0])
-                this.send([21, 0])
-                this.send([23, 0])
-                var tag = new Writer(1 + 2 * (1 + this.randomtag.length))
-                tag.Uint8(21)
-                tag.Uint8(this.randomtag.length)
-                tag.string16(this.randomtag)
-                this.send(tag.buffer.slice(0, 8))
-                this.send([22, 0, 1, 7, 80, 122, 107, 77, 73, 53, 83])
-                this.send([22, 1, 1, 7, 80, 122, 107, 77, 73, 53, 83])
-                setInterval(() => {
-                    this.ping()
-                }, 5000);
-                this.spawn()
+                    this.send([42, 0])
+                    this.send([21, 0])
+                    this.send([23, 0])
+                    var tag = new Writer(1 + 2 * (1 + this.randomtag.length))
+                    tag.Uint8(21)
+                    tag.Uint8(this.randomtag.length)
+                    tag.string16(this.randomtag)
+                    this.send(tag.buffer.slice(0, 8))
+                    this.send([22, 0, 1, 7, 80, 122, 107, 77, 73, 53, 83])
+                    this.send([22, 1, 1, 7, 80, 122, 107, 77, 73, 53, 83])
+                    setInterval(() => {
+                        this.ping()
+                    }, 5000);
+                    this.spawn()
                 default:
             }
         }
