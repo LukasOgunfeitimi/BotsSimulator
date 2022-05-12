@@ -55,9 +55,6 @@ class bot {
     }
     onopen() {
         console.log('connected')
-        setInterval(() => {
-            this.spawn()
-        }, 1000);
         this.ws.send(JSON.stringify({
             type: 'connection',
             status: 'open'
@@ -68,9 +65,6 @@ class bot {
                 status: 'close'
             }))
             console.log('disconnected')
-        })
-        this.socket.on('error', (msg) => {
-            console.log(msg)
         })
     }
     onmessage(message) {
@@ -105,29 +99,25 @@ class bot {
         }, 5000);
     };
     spawn() {
-        if (this.authed) {
-            this.send([10, 0])
-            setTimeout(() => {
-                this.send([10, 1])
-                this.spawn()
-            }, 300);
-        }
+        this.send([10, 0])
+        setTimeout(() => {
+            this.send([10, 1])
+            this.spawn()
+        }, 300);
     }
     mouse(x, y) {
-        if (this.authed) {
-            var tab1 = new DataView(new ArrayBuffer(6))
-            tab1.setUint8(0, 30)
-            tab1.setUint8(1, 0)
-            tab1.setUint16(2, x, true)
-            tab1.setUint16(4, y, true)
-            this.send(tab1.buffer)
-            var tab2 = new DataView(new ArrayBuffer(6))
-            tab2.setUint8(0, 30)
-            tab2.setUint8(1, 1)
-            tab2.setUint16(2,x, true)
-            tab2.setUint16(4,y, true)
-            this.send(tab2.buffer)
-        }
+        var tab1 = new DataView(new ArrayBuffer(6))
+        tab1.setUint8(0, 30)
+        tab1.setUint8(1, 0)
+        tab1.setUint16(2, x, true)
+        tab1.setUint16(4, y, true)
+        this.send(tab1.buffer)
+        var tab2 = new DataView(new ArrayBuffer(6))
+        tab2.setUint8(0, 30)
+        tab2.setUint8(1, 1)
+        tab2.setUint16(2, x, true)
+        tab2.setUint16(4, y, true)
+        this.send(tab2.buffer)
     }
     randomx(min, max) {
         return Math.floor(Math.random() * (max - min) + min)
@@ -141,9 +131,7 @@ class bot {
         this.send([32, 1])
     }
     ping() {
-        if (this.authed) {
         this.send([52])
-        }
     }
     close() {
         this.socket.close()
