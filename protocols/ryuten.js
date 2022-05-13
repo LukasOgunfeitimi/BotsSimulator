@@ -9,7 +9,7 @@ const Writer = require('../core/writer')
 class nicewasm {
     constructor() {
       this.keys = []
-    }
+    } 
     encrypt(data) {
       var encData = []
       for (var i = 0; i < data.length; i++)
