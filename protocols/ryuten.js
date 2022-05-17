@@ -111,18 +111,13 @@ class bot {
         }, 300);
     }
     mouse(x, y) {
-        var tab1 = new DataView(new ArrayBuffer(6))
-        tab1.setUint8(0, 30)
-        tab1.setUint8(1, 0)
-        tab1.setUint16(2, x, true)
-        tab1.setUint16(4, y, true)
-        this.send(tab1.buffer)
-        var tab2 = new DataView(new ArrayBuffer(6))
-        tab2.setUint8(0, 30)
-        tab2.setUint8(1, 1)
-        tab2.setUint16(2, x, true)
-        tab2.setUint16(4, y, true)
-        this.send(tab2.buffer)
+        var tab = new DataView(new ArrayBuffer(6))
+        tab.setUint8(0, 30)
+        tab.setUint16(2, x, true)
+        tab.setUint16(4, y, true)
+        this.send(tab.buffer)
+        tab.setUint8(1, 1)
+        this.send(tab.buffer)
     }
     randomx(min, max) {
         return Math.floor(Math.random() * (max - min) + min)
