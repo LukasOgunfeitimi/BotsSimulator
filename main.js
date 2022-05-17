@@ -32,7 +32,7 @@ class user {
                 body.replace(/\r/g, '').split('\n').forEach((proxy) => {
                     this.start(proxy)
                 });
-                this.bots.forEach((bot, index) => {setTimeout(()=>{ bot.connect()},100 * index)})
+                this.bots.forEach((bot, index) => {setTimeout(()=>{bot.connect()},100 * index)})
             });
             
             
