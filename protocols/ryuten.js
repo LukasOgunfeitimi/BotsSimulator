@@ -19,10 +19,10 @@ class nicewasm {
     }
     rotateKeys() {
       for (var i = 0; i < this.keys.length; i++)
-        this.keys[i] = this.step((this.keys[i] * -0x11) & 0xFf)
+        this.keys[i] = this.step((this.keys[i] * -0x11) & 0xFF)
     }
     step(key) { 
-      return ((key << 4) | (key >> 4)) & 0xFf
+      return ((key << 4) | (key >> 4)) & 0xFF
     }
     setKeys(keys) {
       this.keys = keys
