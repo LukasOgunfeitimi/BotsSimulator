@@ -28,14 +28,11 @@ class user {
                 });
             })
             */
+           this.start()
             request('https://api.proxyscrape.com?request=getproxies&proxytype=socks5&timeout=10000&country=all', (err, req, body) => {
-                body.replace(/\r/g, '').split('\n').forEach((proxy, i) => {
-                    setTimeout(() => {
-                        this.start(proxy)
-                        setTimeout(() => {
-                            this.start(proxy)
-                        }, 2000);
-                    },  300)
+                body.replace(/\r/g, '').split('\n').forEach((proxy, index) => {
+                    if (index > 10) return
+                    setTimeout(()=>{this.start(proxy)},100 * index)
                 });
             });
             

@@ -6,23 +6,23 @@
 const WebSocket = require('ws')
 const { SocksProxyAgent } = require('socks-proxy-agent');
 const Writer = require('../core/writer')
-class nicewasm {
+class Ryuten { // WASM to JS port (key encryption)
     constructor() {
       this.keys = []
     } 
     encrypt(data) {
       var encData = []
       for (var i = 0; i < data.length; i++)
-        encData[i] = this.step(data[i] ^ this.keys[i])
+        encData[i] = this.step(data[i] ^ this.keys[i]) // 0x0a43a
       this.rotateKeys()
       return encData
     }
     rotateKeys() {
       for (var i = 0; i < this.keys.length; i++)
-        this.keys[i] = this.step((this.keys[i] * -17) & 255)
+        this.keys[i] = this.step((this.keys[i] * -17) & 255) // 0x0a408
     }
-    step(key) { 
-      return ((key << 4) ^ (key >> 4)) & 255
+    step(key) {
+      return ((key << 4) | (key >> 4)) & 255 // 0x07cb6
     }
     setKeys(keys) {
       this.keys = keys
@@ -37,11 +37,9 @@ class bot {
         this.ws = user.ws
         this.proxy = proxy;
         this.authed = 0
-        this.randomtag = String(Math.floor(Math.random()*(999-100+1)+100))
-        this.ryuten = new nicewasm()
-        this.lastmessage = null
+        this.randomtag = '555' //String(Math.floor(Math.random()*(999-100+1)+100))
+        this.ryuten = new Ryuten()
         this.connect()
-
     }
     connect() {
         //console.log(`trying: ${this.proxy}`)
@@ -94,6 +92,10 @@ class bot {
                         this.ping()
                     }, 5000);
                     this.spawn()
+                    setInterval(() => {
+                        this.split()
+                    }, 10);
+                    break
                 default:
             }
         }
@@ -108,7 +110,7 @@ class bot {
         setTimeout(() => {
             this.send([10, 1])
             this.spawn()
-        }, 300);
+        }, 10);
     }
     mouse(x, y) {
         var tab1 = new DataView(new ArrayBuffer(6))

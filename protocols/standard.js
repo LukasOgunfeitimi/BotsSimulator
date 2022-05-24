@@ -57,7 +57,7 @@ class bot {
                     this.send(buffer.buffer)
                 }, 1000);
                 break
-            case "http://mobilemoti.webcrow.jp":
+            case "http://sakuragame.starfree.jp":
                 this.sendVersions(5, 1)
                 var buffer = new Writer((botName.length << 1) + 9)
                 buffer.Uint8(0)
