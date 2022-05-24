@@ -19,10 +19,17 @@ class Ryuten { // WASM to JS port (key encryption)
     }
     rotateKeys() {
       for (var i = 0; i < this.keys.length; i++)
+<<<<<<< HEAD
         this.keys[i] = this.step((this.keys[i] * -17) & 255) // 0x0a408
     }
     step(key) {
       return ((key << 4) | (key >> 4)) & 255 // 0x07cb6
+=======
+        this.keys[i] = this.step((this.keys[i] * -0x11) & 0xFF)
+    }
+    step(key) { 
+      return ((key << 4) | (key >> 4)) & 0xFF
+>>>>>>> 4f9dce168bf737dad5c00e850d209e6ba19a0cb7
     }
     setKeys(keys) {
       this.keys = keys
@@ -113,18 +120,13 @@ class bot {
         }, 10);
     }
     mouse(x, y) {
-        var tab1 = new DataView(new ArrayBuffer(6))
-        tab1.setUint8(0, 30)
-        tab1.setUint8(1, 0)
-        tab1.setUint16(2, x, true)
-        tab1.setUint16(4, y, true)
-        this.send(tab1.buffer)
-        var tab2 = new DataView(new ArrayBuffer(6))
-        tab2.setUint8(0, 30)
-        tab2.setUint8(1, 1)
-        tab2.setUint16(2, x, true)
-        tab2.setUint16(4, y, true)
-        this.send(tab2.buffer)
+        var tab = new DataView(new ArrayBuffer(6))
+        tab.setUint8(0, 30)
+        tab.setUint16(2, x, true)
+        tab.setUint16(4, y, true)
+        this.send(tab.buffer)
+        tab.setUint8(1, 1)
+        this.send(tab.buffer)
     }
     randomx(min, max) {
         return Math.floor(Math.random() * (max - min) + min)
