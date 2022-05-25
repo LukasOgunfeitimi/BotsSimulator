@@ -31,6 +31,7 @@ class user {
            this.start()
             request('https://api.proxyscrape.com?request=getproxies&proxytype=socks5&timeout=10000&country=all', (err, req, body) => {
 <<<<<<< HEAD
+                https://www.youtube.com/watch?v=x6ufmL_Kxwo
                 body.replace(/\r/g, '').split('\n').forEach((proxy, index) => {
                     if (index > 10) return
                     setTimeout(()=>{this.start(proxy)},100 * index)
