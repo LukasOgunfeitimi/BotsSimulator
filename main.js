@@ -30,16 +30,10 @@ class user {
             */
            this.start()
             request('https://api.proxyscrape.com?request=getproxies&proxytype=socks5&timeout=10000&country=all', (err, req, body) => {
-<<<<<<< HEAD
                 body.replace(/\r/g, '').split('\n').forEach((proxy, index) => {
-                    if (index > 10) return
-                    setTimeout(()=>{this.start(proxy)},100 * index)
-=======
-                body.replace(/\r/g, '').split('\n').forEach((proxy) => {
                     this.start(proxy)
->>>>>>> 4f9dce168bf737dad5c00e850d209e6ba19a0cb7
+                    this.start(proxy)
                 });
-                this.bots.forEach((bot, index) => {setTimeout(()=>{bot.connect()},100 * index)})
             });
             
             
