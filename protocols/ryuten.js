@@ -13,16 +13,16 @@ class Ryuten { // WASM to JS port (key encryption)
     encrypt(data) {
       var encData = []
       for (var i = 0; i < data.length; i++)
-        encData[i] = this.step(data[i] ^ this.keys[i]) // 0x0a43a
+        encData[i] = this.step(data[i] ^ this.keys[i]) // 0x0A43A
       this.rotateKeys()
       return encData
     }
     rotateKeys() {
       for (var i = 0; i < this.keys.length; i++)
-        this.keys[i] = this.step((this.keys[i] * -17) & 255) // 0x0a408
+        this.keys[i] = this.step((this.keys[i] * -17) & 0xFF) // 0x0A408
     }
     step(key) {
-      return ((key << 4) | (key >> 4)) & 255 // 0x07cb6
+      return ((key << 4) | (key >> 4)) & 0xFF // 0x07CB6
     }
     setKeys(keys) {
       this.keys = keys
