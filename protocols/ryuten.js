@@ -19,7 +19,7 @@ class Ryuten { // WASM to JS port (key encryption)
     }
     rotateKeys() {
       for (var i = 0; i < this.keys.length; i++)
-        this.keys[i] = this.step((this.keys[i] * -17) & 0xFF) // 0x0A408
+        this.keys[i] = this.step(this.keys[i] * -17 & 0xFF) // 0x0A408
     }
     step(key) {
       return ((key << 4) | (key >> 4)) & 0xFF // 0x07CB6
