@@ -13,6 +13,9 @@ class user {
         this.bots = []
         this.captchaTokens = []
         this.duplicateBot
+        this.connectState = true
+        this.ryutentag = undefined
+        this.ryutenpin = undefined
         this.ws.on('message', this.onmessage.bind(this));
         this.ws.on('close', this.onclose.bind(this));
     }
@@ -31,12 +34,10 @@ class user {
            this.start()
             request('https://api.proxyscrape.com?request=getproxies&proxytype=socks5&timeout=10000&country=all', (err, req, body) => {
                 body.replace(/\r/g, '').split('\n').forEach((proxy, index) => {
-                    this.start(proxy)
-                    this.start(proxy)
+                        this.start(proxy)
+                        this.start(proxy) 
                 });
-            });
-            
-            
+            }); 
     }
     start(proxy) {
         switch (this.origin) {
@@ -70,8 +71,11 @@ class user {
         const message = JSON.parse(msg)
         switch (message.type) {
             case 'lxbauth':
+                this.connectState = true
                 this.origin = message.origin
                 this.server = message.server
+                this.ryutentag = message.tag
+                this.ryutenpin = message.pin
                 this.init()
                 break
             case 'mouse':
@@ -84,6 +88,7 @@ class user {
                 for (const bot in this.bots) this.bots[bot].eject()
                 break
             case 'bye':
+                this.connectState = false
                 this.origin = null
                 this.server = null
                 for (const bot in this.bots) this.bots[bot].close()
@@ -93,6 +98,15 @@ class user {
             case 'captcha':
                 this.captchaTokens.push(message.token)
         }
+    }
+    get connectedState() {
+        return this.connectState
+    }
+    get RyutenInfo() {
+        return {tag: this.ryutentag, pin: this.ryutenpin}
+    }
+    get authedRyutenBots() {
+        return this.bots.filter(bot => bot.authed).length
     }
     get captchaToken() {
         return this.captchaTokens.shift()

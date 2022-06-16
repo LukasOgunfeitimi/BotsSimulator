@@ -25,16 +25,14 @@ module.exports = class {
         this.buffer.writeInt32LE(value, this.byteOffset)
         this.byteOffset += 4
     }
-    string8(string, zero) {
+    string8(string) {
         for (let i = 0; i < string.length; i++) {
             this.Uint8(string.charCodeAt(i))
-            if (zero) this.Uint8(0)
         }
     }
     string16(string, zero) {
         for (let i = 0; i < string.length; i++) {
             this.Uint16(string.charCodeAt(i))
-            if (zero) this.Uint8(0)
         }
     }
 }

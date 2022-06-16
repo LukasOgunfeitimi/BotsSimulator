@@ -9,9 +9,11 @@
 // @match        *.bublex.io/*
 // @match        *.slither.io/*
 // @match        *.agarr.live/*
+// @match        *.sakuragame.starfree.jp/*
 // @match        *.agar.live/*
 // @match        *.cirlzgame.tk/*
 // @match        *.cell.sh/*
+// @match        *.agarix.ru/*
 // @match        *.ryuten.io/*
 // @run-at       document-start
 // @grant        none
@@ -52,23 +54,25 @@ class Client {
         this.ws.onerror = this.onerror.bind(this)
         this.ws.onmessage = this.onmessage.bind(this)
         this.log('Client: Connecting to server...');
-
         setTimeout(() => {
             var box = document.getElementById('start')
-            box.click();
+            box.style.backgroundColor = 'red'
             box.addEventListener('click', (event) => {
                 if (box.style.backgroundColor === 'red') {
-                    console.log(this.gameServer)
+                    box.innerText = 'START'
                     box.style.backgroundColor = 'green'
                     if (this.gameServer !== undefined) {
                         this.send(JSON.stringify({
                             type: 'lxbauth',
                             origin: location.origin,
-                            server: this.gameServer
+                            server: this.gameServer,
+                            tag: document.getElementById("team-input").value,
+                            pin: document.getElementById("pin-input").value
                         }));
                     }
-                        // }
+                    // }
                 } else {
+                    box.innerText = 'STOP'
                     box.style.backgroundColor = 'red'
                     this.send(JSON.stringify({
                         type: 'bye'
@@ -98,7 +102,7 @@ class Client {
         },100)
         */
         this.startMoving()
-       // this.generateTokens();
+        // this.generateTokens();
         var box = document.getElementById('box')
         document.getElementById('box').childNodes[0].nodeValue = 'connected'
         document.querySelector('.circle-loader').classList.toggle('load-complete');
@@ -126,14 +130,19 @@ class Client {
         var newMsg = JSON.parse(msg.data)
         switch (newMsg.type) {
             case 'connection':
-                if (newMsg.status === 'open') {
-                    this.connected++
+                switch (newMsg.status) {
+                    case 'open':
+                        this.connected++
                         document.getElementById('bots').innerText = `${this.connected}`
-                } else {
-                    this.connected--
+                        break
+                    case 'close':
+                        this.connected--
+                        document.getElementById('bots').innerText = `${this.connected}`
+                        break
+                    case 'reset':
+                        this.connected = 0
                         document.getElementById('bots').innerText = `${this.connected}`
                 }
-                break
         }
     }
     onerror(e) {
@@ -182,18 +191,14 @@ class Client {
             else if (pkt instanceof DataView) pkt = pkt;
             else pkt = new DataView(pkt.buffer);
             if (test.gameServer !== this.url) test.gameServer = this.url
-            /*
             switch (pkt.getUint8(0, true)) {
-                case 2:
                 case 16:
-                    test.data = String.fromCharCode.apply(null, new Uint8Array(pkt.buffer));
-                    test.x = pkt.getFloat64(1, true)
-                    test.y = pkt.getFloat64(9, true)
-
+                    /*
+                    test.x = pkt.getInt32(1, true)
+                    test.y = pkt.getInt32(5, true)
+*/
             }
-            */
         }
-
         DataView.prototype.realSet = DataView.prototype.setUint16
         DataView.prototype.setUint16 = function() {
             var type = this.getUint8()
@@ -211,7 +216,6 @@ class Client {
             }
         }
     }
-
 
     log(msg) {
         console.log(msg);
@@ -245,12 +249,11 @@ background-color: red;
 align-content: center;
 margin: 10px;
 padding: 0px 15px 0px 15px;
-left: 15px;
 top: 100%;
 z-index: 100000;
 visibility: visible;
 opacity: 0;
-transition: all 2.5s ease-in;
+transition: all 1s ease-in;
 -khtml-user-select: none;
 }
 
@@ -385,7 +388,7 @@ if (location.origin.includes('gota.io')) {
             clearInterval(captchaInt)
         }
     })
-}
+    }
 setTimeout(() => {
     test = new Client(clientIP);
 }, 3000);

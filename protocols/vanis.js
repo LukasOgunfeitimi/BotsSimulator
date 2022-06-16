@@ -78,17 +78,17 @@ class bot {
         const result = [];
         let last, current,
             mask = (current = key[0]) + 4 & 7;
-        result.push(last = hash[0] ^ (current << mask | current >>> 8 - mask) & 0xff);
+        result.push(last = hash[0] ^ (current << mask | current >>> 8 - mask) & 0xFF);
         for (let i = 1; i < 8; i++) {
             mask = (current = key[i]) + 4 & 7;
-            result.push(last = (current << mask | current >>> 8 - mask) & 0xff ^ last ^ hash[i]);
+            result.push(last = (current << mask | current >>> 8 - mask) & 0xFF ^ last ^ hash[i]);
         }
         const seed = ~~((Math.pow(2, 32) - 1) * Math.random());
-        result.push((result[0] ^ seed >>> 24) & 0xff)
-        result.push((result[1] ^ seed >>> 16) & 0xff)
-        result.push((result[2] ^ seed >>> 8) & 0xff)
-        result.push((seed ^ result[3]) & 0xff)
-        result.push((result[0] ^ 0x1F & -0x20) & 0xff)
+        result.push((result[0] ^ seed >>> 24) & 0xFF)
+        result.push((result[1] ^ seed >>> 16) & 0xFF)
+        result.push((result[2] ^ seed >>> 8) & 0xFF)
+        result.push((seed ^ result[3]) & 0xFF)
+        result.push((result[0] ^ 0x1F & -0x20) & 0xFF)
         return result;
     }
     onerror() {}

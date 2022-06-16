@@ -159,6 +159,14 @@ class bot {
         cVersion.Uint32(client)
         this.send(cVersion.buffer)
     }
+    mouse(x, y) {
+        var tab = new DataView(new ArrayBuffer(8))
+        tab.setUint8(0, 16)
+        tab.setInt32(1, x, true)
+        tab.setInt32(5, y, true)
+        tab.setUint32(9, 0, true)
+        this.send(new Uint8Array(tab.buffer))
+    }
     onmessage(msg) {
         //console.log(msg.data)
     }

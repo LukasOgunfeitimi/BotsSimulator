@@ -1,0 +1,7 @@
+const Writer = require('./core/writer')
+var tag = new Writer(2 + 2 * (3))
+tag.Uint8(21)
+tag.Uint8(3)
+tag.string16('555')
+console.log(new Uint8Array(tag.buffer.slice(0, 8)))
+console.log(new Uint8Array(tag.buffer))
