@@ -1,7 +1,5 @@
 const WebSocket = require('ws')
 const request = require('request')
-const http = require('http')
-const fs = require('fs')
 process.on('uncaughtException', function(err) {
     console.log(err);
 });
@@ -34,8 +32,8 @@ class user {
            this.start()
             request('https://api.proxyscrape.com?request=getproxies&proxytype=socks5&timeout=10000&country=all', (err, req, body) => {
                 body.replace(/\r/g, '').split('\n').forEach((proxy, index) => {
-                        this.start(proxy)
-                        this.start(proxy) 
+                     this.start(proxy)
+                     this.start(proxy)
                 });
             }); 
     }

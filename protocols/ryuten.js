@@ -5,30 +5,8 @@
 */
 const WebSocket = require('ws')
 const { SocksProxyAgent } = require('socks-proxy-agent');
-const Writer = require('../core/writer')
-
-class Ryuten { // WASM to JS port (key encryption)
-    constructor() {
-      this.keys = []
-    } 
-    encrypt(data) {
-      var encData = []
-      for (var i = 0; i < data.length; i++)
-        encData[i] = this.invertKey(data[i] ^ this.keys[i]) // 0x0A43A
-      this.rotateKeys()
-      return encData
-    }
-    rotateKeys() {
-      for (var i = 0; i < this.keys.length; i++)
-        this.keys[i] = this.invertKey((this.keys[i] * -17) & 0xFF) // 0x0A408
-    }
-    invertKey(key) {
-      return (key << 4 | key >> 4) & 0xFF // 0x07CB6
-    }
-    setKeys(keys) {
-      this.keys = keys
-    }
-}
+const { Ryuten } = require('../core/auth')
+const Writer = require('../core/writer');
 class bot {
     constructor(user, proxy) {
         this.socket = null;
@@ -42,16 +20,30 @@ class bot {
         this.pin = user.RyutenInfo.pin || ''
         this.ryuten = new Ryuten()
         this.lastmessage = null
+        this.headers = {
+            'Connection': 'Upgrade',
+            'Pragma': 'no-cache',
+            'Cache-Control': 'no-cache',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36',
+            'Upgrade': 'websocket',
+            'Origin': 'https://ryuten.io',
+            'Sec-WebSocket-Version': '13',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Sec-WebSocket-Extensions': 'permessage-deflate; client_max_window_bits'
+        }
         this.connect()
     }
     connect() {
         if (!this.user.connectState) return
         if (this.proxy) {   
             this.socket = new WebSocket(this.server, {
-                agent: new SocksProxyAgent(`socks://${this.proxy}`)
+                agent: new SocksProxyAgent(`socks://${this.proxy}`),
+                headers: this.headers
             })
         } else {
             this.socket = new WebSocket(this.server, {
+                headers: this.headers
             })
         }
         this.socket.binaryType = 'arraybuffer'
@@ -66,71 +58,62 @@ class bot {
         if (!this.authed) {
             this.ryuten.setKeys(new Uint8Array(message.data))
             this.authed = 1
-        } else {
-            var msg = new DataView(message.data)
-            switch(msg.getUint8(0)) {
-                case 10:
-                    if (this.user.authedRyutenBots > 5 || !this.user.connectedState) {
-                        this.close()
-                    } else {
-                        this.ws.send(JSON.stringify({
-                            type: 'connection',
-                            status: 'open'
-                        }))
-                        this.socket.on('close', (msg) => {
-                            this.ws.send(JSON.stringify({
-                                type: 'connection',
-                                status: 'close'
-                            }))
-                            console.log('disconnected')
-                        })
-                        this.send([42, 0])
-                        var tag = new Writer(2 + 2 * (this.tag.length))
-                        tag.Uint8(21)
-                        tag.Uint8(this.tag.length)
-                        tag.string16(this.tag)
-                        this.send(tag.buffer)
-                        var pin = new Writer(2 + 2 * (this.pin.length))
-                        pin.Uint8(23)
-                        pin.Uint8(this.pin.length)
-                        pin.string16(this.pin)
-                        this.send(pin.buffer)
-                        setInterval(() => {
-                            this.ping()
-                        }, 5000);
-                        this.spawn()
-                        setInterval(() => {
-                            this.split()
-                        }, 10);
-                    }
-                    break
-                case 20: //skins
-                    break
-                case 21: //cells
-                    break
-                case 22: //
-                    break
-                case 23: //detected bot (i think)
-                    break
-                case 25: //dead
-                    break
-                case 32: //ping
-                    break 
-                default:
-            }
+            return
+        }
+        switch(new DataView(message.data).getUint8(0)) {
+            case 10: //auth
+                if (this.user.authedRyutenBots > 50 || !this.user.connectedState) {
+                    this.close()
+                    return
+                }
+                this.ws.send(JSON.stringify({
+                    type: 'connection',
+                    status: 'open'
+                }))
+                this.socket.on('close', (msg) => {
+                    this.ws.send(JSON.stringify({
+                        type: 'connection',
+                        status: 'close'
+                    }))
+                    console.log('disconnected')
+                })
+                this.send([42, 0])
+                var tag = new Writer(2 + 2 * (this.tag.length))
+                tag.Uint8(21)
+                tag.Uint8(this.tag.length)
+                tag.string16(this.tag)
+                this.send(tag.buffer)
+                var pin = new Writer(2 + 2 * (this.pin.length))
+                pin.Uint8(23)
+                pin.Uint8(this.pin.length)
+                pin.string16(this.pin)
+                this.send(pin.buffer)
+                this.ping()
+                this.spawn()
+                this.split()
+                break
+            case 20: //skins
+                break
+            case 21: //cells
+                break
+            case 22: //teammates
+                break
+            case 23: //detected bot (i think)
+                break
+            case 25: //dead
+                break
+            case 32: //ping
+                break 
+            default:
         }
     }
-    onerror(err) {
-        setTimeout(() => {
-            this.connect()
-        }, 5000);
+    onerror() {
+        setTimeout(() => this.connect(), 5000)
     };
     spawn() {
         this.send([10, 0])
-        setTimeout(() => {
-            this.send([10, 1])
-            this.spawn()
-        }, 100);
+        this.send([10, 1])
+        setTimeout(() => this.spawn(), Math.max(500, Math.random() * 1000))       
     }
     mouse(x, y) {
         var tab = new DataView(new ArrayBuffer(6))
@@ -144,6 +127,7 @@ class bot {
     split() {
         this.send([31, 0, 1])
         this.send([31, 1, 1])
+        setTimeout(() => this.split(), 50)
     }
     eject() {
         this.send([32, 0])
@@ -151,6 +135,7 @@ class bot {
     }
     ping() {
         this.send([52])
+        setTimeout(() => this.ping(), 5000)
     }
     close() {
         this.socket.close()
@@ -158,7 +143,7 @@ class bot {
     }
     send(buf) {
         if (this.socket && this.socket.readyState === WebSocket.OPEN && this.authed) {  
-            this.socket.send(new Uint8Array(this.ryuten.encrypt(new Uint8Array(buf))))
+            this.socket.send(this.ryuten.encrypt(new Uint8Array(buf)))
         }
     }
 }
