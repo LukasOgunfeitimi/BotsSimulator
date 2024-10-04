@@ -42,7 +42,7 @@ class bot {
         this.socket.onmessage = this.onmessage.bind(this)
     }
     onopen() {
-        console.log(`connected`.green)
+        console.log(`connected`)
         this.ws.send(JSON.stringify({
             type: 'connection',
             status: 'open'
@@ -67,7 +67,7 @@ class bot {
                 buffer.Uint16(0)
                 buffer.Uint16(0)
                 setInterval(() => {
-                    this.send(buffer.buffer)
+                    this.send(new Uint8Array([0, 0, 0, 8, 0, 112, 0, 114, 0, 111, 0, 102, 0, 105, 0, 108, 0, 101, 0, 49, 0, 0, 0, 0, 0]))
                 }, (Math.random() * 1500) + 1000);
                 break
             case "http://de.agar.bio/":
@@ -146,7 +146,7 @@ class bot {
                 type: 'connection',
                 status: 'close'
             }))
-            console.log('disconnected'.red)
+            console.log('disconnected')
         })
     }
     sendVersions(proto, client) {
@@ -160,7 +160,7 @@ class bot {
         this.send(cVersion.buffer)
     }
     mouse(x, y) {
-        var tab = new DataView(new ArrayBuffer(8))
+        var tab = new DataView(new ArrayBuffer(13))
         tab.setUint8(0, 16)
         tab.setInt32(1, x, true)
         tab.setInt32(5, y, true)

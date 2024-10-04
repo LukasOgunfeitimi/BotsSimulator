@@ -1,12 +1,14 @@
 const fetch = require('node-fetch')
 const WebSocket = require('ws')
 const {SocksProxyAgent} = require('socks-proxy-agent')
+const { Vanis } = require('../core/auth')
 class bot {
     constructor(user, proxy) {
         this.socket = null;
         this.server = user.server
         this.origin = user.origin
         this.ws = user.ws
+        this.vanis = new Vanis()
         this.proxy = new SocksProxyAgent(`socks://${proxy}`);
         this.socketheaders = {
             "Connection": "Upgrade",
@@ -60,7 +62,7 @@ class bot {
                 break
             case 2:
                 var buf = [5, 18]
-                var key = this.rotateKey(new Uint8Array(buffer.buffer, 1))
+                var key = this.vanis.rotateKey(new Uint8Array(buffer.buffer, 1))
                 for (var i = 0; i < key.length; i++) buf.push(key[i])
                 this.send(buf)
                 break
@@ -72,24 +74,6 @@ class bot {
             default:
                 console.log(Buffer.from(msg.data))
         }
-    }
-    rotateKey(key) { // credits to Aero
-        const hash = [55, 3, 170, 32, 65, 27, 9, 128];
-        const result = [];
-        let last, current,
-            mask = (current = key[0]) + 4 & 7;
-        result.push(last = hash[0] ^ (current << mask | current >>> 8 - mask) & 0xFF);
-        for (let i = 1; i < 8; i++) {
-            mask = (current = key[i]) + 4 & 7;
-            result.push(last = (current << mask | current >>> 8 - mask) & 0xFF ^ last ^ hash[i]);
-        }
-        const seed = ~~((Math.pow(2, 32) - 1) * Math.random());
-        result.push((result[0] ^ seed >>> 24) & 0xFF)
-        result.push((result[1] ^ seed >>> 16) & 0xFF)
-        result.push((result[2] ^ seed >>> 8) & 0xFF)
-        result.push((seed ^ result[3]) & 0xFF)
-        result.push((result[0] ^ 0x1F & -0x20) & 0xFF)
-        return result;
     }
     onerror() {}
     split() {

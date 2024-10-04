@@ -199,13 +199,14 @@ class Client {
 */
             }
         }
+        //ez
         DataView.prototype.realSet = DataView.prototype.setUint16
         DataView.prototype.setUint16 = function() {
-            var type = this.getUint8()
-            var offset = type === 30 ? 2 : type === 41 ? 1 : 0
-            var bufferOffset = arguments[0]
-            var buffer = arguments[1]
-            this.realSet(bufferOffset, buffer, true)
+            this.realSet(...arguments)
+            const type = this.getUint8()
+            const offset = type === 30 ? 2 : type === 41 ? 1 : 0
+            const bufferOffset = arguments[0]
+            const buffer = arguments[1]
             switch (bufferOffset) {
                 case offset:
                     test.x = buffer | 0
