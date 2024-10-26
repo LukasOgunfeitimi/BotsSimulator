@@ -144,46 +144,48 @@ class user {
     }
 
     init() {
-        request('https://raw.githubusercontent.com/monosans/proxy-list/refs/heads/main/proxies_anonymous/socks4.txt', (err, req, body) => {
-            body.replace(/\r/g, '').split('\n').forEach((proxy, index) => {
-                setTimeout(() => {
-                    this.start(proxy, "socks4")
-                    this.start(proxy, "socks4")
-                }, index * 25);
+        const fetchProxies = (url, type) => {
+            return new Promise((resolve, reject) => {
+                request(url, (err, req, body) => {
+                    if (err) return reject(err);
+                    
+                    const proxies = body.replace(/\r/g, '').split('\n').filter(proxy => proxy); 
+                    let completed = 0; 
+        
+                    if (proxies.length === 0) {
+                        resolve();
+                        return;
+                    }
+        
+                    proxies.forEach((proxy, index) => {
+                        setTimeout(() => {
+                            //console.log(proxy, url)
+                            this.start(proxy, type);
+                            completed++; 
+                            if (completed === proxies.length) {
+                                console.log("done");
+                                resolve();
+                            }
+                        }, index * 35);
+                    });
+                });
             });
-        });
-        request('https://raw.githubusercontent.com/monosans/proxy-list/refs/heads/main/proxies/socks4.txt', (err, req, body) => {
-            body.replace(/\r/g, '').split('\n').forEach((proxy, index) => {
-                setTimeout(() => {
-                    this.start(proxy, "socks4")
-                    this.start(proxy, "socks4")
-                }, index * 25);
-            });
-        });
-        request('https://api.proxyscrape.com?request=getproxies&proxytype=http&timeout=10000&country=all', (err, req, body) => {
-            body.replace(/\r/g, '').split('\n').forEach((proxy, index) => {
-                setTimeout(() => {
-                    this.start(proxy, "http")
-                    this.start(proxy, "http")
-                }, index * 25);
-            });
-        });
-        request('https://raw.githubusercontent.com/TheSpeedX/PROXY-List/master/socks4.txt', (err, req, body) => {
-            body.replace(/\r/g, '').split('\n').forEach((proxy, index) => {
-                setTimeout(() => {
-                    this.start(proxy, "socks4")
-                    this.start(proxy, "socks4")
-                }, index * 25);
-            });
-        });
-        request('https://api.proxyscrape.com?request=getproxies&proxytype=socks4&timeout=10000&country=all', (err, req, body) => {
-            body.replace(/\r/g, '').split('\n').forEach((proxy, index) => {
-                setTimeout(() => {
-                    this.start(proxy, "socks4")
-                    this.start(proxy, "socks4")
-                }, index * 25);
-            });
-        });
+        };
+        
+        const runRequestsSequentially = async () => {
+            try {
+                await fetchProxies('https://raw.githubusercontent.com/monosans/proxy-list/refs/heads/main/proxies_anonymous/socks4.txt', 'socks4');
+                await fetchProxies('https://raw.githubusercontent.com/monosans/proxy-list/refs/heads/main/proxies/socks4.txt', 'socks4');
+                await fetchProxies('https://api.proxyscrape.com?request=getproxies&proxytype=http&timeout=10000&country=all', 'http');
+                await fetchProxies('https://raw.githubusercontent.com/TheSpeedX/PROXY-List/master/socks4.txt', 'socks4');
+                await fetchProxies('https://api.proxyscrape.com?request=getproxies&proxytype=socks4&timeout=10000&country=all', 'socks4');
+            } catch (error) {
+                console.error('Error fetching proxies:', error);
+            }
+        };
+        
+        // Call the function to start the requests
+        runRequestsSequentially();
         /*
         fetch('https://api.proxyscrape.com?request=getproxies&proxytype=socks5&timeout=10000&country=all')
             .then(response => response.text())

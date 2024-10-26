@@ -38,7 +38,7 @@ module.exports = class Writer {
         this.index += 8
     }
     writeString8(e) {
-        this.writeUInt8(e.length);
+        //this.writeUInt8(e.length);
         for (let t = 0; t < e.length; t++) {
             const n = e.charCodeAt(t);
             this.writeUInt8(n)
