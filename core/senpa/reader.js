@@ -78,15 +78,13 @@ module.exports = class Reader {
         return t
     }
     readLongString16() {
-        const e = this.readUInt16();
-        let t = "";
-        for (let n = 0; n < e; n++) {
-            if (this.end)
-                break;
-            const e = this.readUInt16();
-            t += String.fromCharCode(e)
+        let str = '';
+        while (true) {
+            let char = this.readUInt16();
+            if (char === 0) break;
+            str += String.fromCharCode(char);
         }
-        return t
+        return str;
     }
     decodeString(e) {
         return decodeURI(e)

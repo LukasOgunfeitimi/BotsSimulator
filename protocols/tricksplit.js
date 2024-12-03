@@ -1,31 +1,64 @@
 const WebSocket = require('ws')
-const TricksplitWasmInstance = require('./ts.js')
+const TricksplitWasmInstance = require('../core/ts.js')
+
+const { SocksProxyAgent } = require('socks-proxy-agent')
+const { HttpProxyAgent } = require('http-proxy-agent')
+
+const Writer = require('../core/senpa/writer.js')
+const Reader = require('../core/senpa/reader.js')
+
 
 class Minion {
-    constructor() {
-        //this.agent = grab_proxy();
+    constructor(user, proxy, headers, id, proxyType) {
+        this.clientws = user.ws;
+        this.ws = null;
+        this.user = user;
+        this.id = id;
+        this.proxy = proxy;
+        this.proxyType = proxyType;
+        this.server = user.server
         this.startedBots = false;
         this.isReconnecting = false;
         this.useID = false;
+        this.headers = {
+            "accept-encoding": "gzip, deflate, br, zstd",
+            "accept-language": "en-GB,en-US;q=0.9,en;q=0.8",
+            "cache-control": "no-cache",
+            "connection": "Upgrade",
+            "host": "tricksplit.nebulaaaa.lol",
+            "origin": "https://tricksplit.io",
+            "pragma": "no-cache",
+            "sec-websocket-extensions": "permessage-deflate; client_max_window_bits",
+            "sec-websocket-version": "13",
+            "upgrade": "websocket",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+        }
+        this.spawnInfo = '{"name":"LONG LIVE TS!","skin":"","skin2":"","hat":"","hat2":"","nameColor":"","borderColor":"","shape":""}';
+        this.connect();
     }
 
-    connect(url) {
+    connect() {
+        let proxy = null
         this.startedBots = true;
-        this.serverUrl = url;
+        //this.serverUrl = url;
 
-        this.ws = new WebSocket(url, {
-            //agent: this.agent,
+        if (this.proxyType === "http") proxy = new HttpProxyAgent(`http://${this.proxy}`);
+        else if (this.proxyType === "socks4") proxy = new SocksProxyAgent(`socks4://${this.proxy}`);
+        else if (this.proxyType === "socks5") proxy = new SocksProxyAgent(`socks5://${this.proxy}`);
+        
+        this.ws = new WebSocket(this.server, {
+            agent: proxy,
             rejectUnauthorized: true,
-            //headers: generateHeaders('https://tricksplit.io'),
+            headers: this.headers,
             timeout: 5000
         });
 
         this.ws.binaryType = 'arraybuffer';
-
         this.ws.onmessage = this.onMessage.bind(this);
         this.ws.onopen = this.onOpen.bind(this);
         this.ws.onclose = this.onClose.bind(this);
         this.ws.onerror = this.onError.bind(this);
+        console.log(this.proxy);
 
         this.id = Math.floor(Math.pow(2, 14) * Math.random()).toString(36);
         this.name = "L" + this.id
@@ -33,8 +66,8 @@ class Minion {
 
     onMessage(message) {
         var reader = new Reader(message.data);
-
-        switch (reader.readUInt8(0x0)) {
+        const op = reader.readUInt8(0x0)
+        switch (op) {
             case 91:
                 this.sendPong();
                 break;
@@ -59,17 +92,28 @@ class Minion {
                     var x = reader.readUInt8();
 
                     if (4 & x) {
-                        reader.readUTF16string();
+                        reader.readLongString16();
                     }
-                    reader.readUTF16string();
+                    reader.readLongString16();
                 }
-
                 for (var i = reader.readUInt32(); i--;) {
                     reader.readUInt32();
                 }
 
-                if (reader.offset < reader.maxOffset - 1) {
-                    this.solveSecret(new Uint8Array(reader.dataView.buffer).slice(reader.offset, reader.maxOffset));
+                if (reader.index < reader.maxIndex - 1) {
+                    this.clientws.send(JSON.stringify({
+                        type: 'connection',
+                        status: 'open'
+                    }))
+                    
+                    this.ws.on('close', (msg) => {
+                        console.log('d')
+                        this.clientws.send(JSON.stringify({
+                            type: 'connection',
+                            status: 'close'
+                        }))
+                    })
+                    this.solveSecret(new Uint8Array(reader.view.buffer).slice(reader.index, reader.maxIndex));
                 }
         }
     }
@@ -98,30 +142,35 @@ class Minion {
 
     sendFeed() {
         this.sendUint8(21);
+        this.sendUint8(0x1a);
+        this.sendUint8(21);
     }
 
     sendSplit() {
         this.sendUint8(17);
+        this.sendUint8(0x1a);
+        this.sendUint8(17);
     }
 
     sendSpawn(json) {
-        json = JSON.stringify(json);
         const spawnBuffer = new Writer(3 + 2 * json.length);
-        spawnBuffer.writeUint8(0);
-        spawnBuffer.writeUTF16String(json);
-        this.send(spawnBuffer.getBuffer);
+        spawnBuffer.writeUInt8(0);
+        spawnBuffer.writeString16(json);
+        this.send(spawnBuffer.buffer);
+        this.sendUint8(0x1a);
     }
 
     startupSpawn() {
-        if (!this.readyToSpawn) return;
-        // Removed.
+        setInterval(() => {
+            this.sendSpawn(this.spawnInfo);
+        }, 500);
     }
 
     onOpen() {
         this.wasmInstance = new TricksplitWasmInstance();
 
         this.readyToSpawn = false;
-
+        console.log('c');
         this.sendHandshake();
         this.send(this.wasmInstance.first());
         this.sendVerifyToken();
@@ -129,42 +178,39 @@ class Minion {
     }
 
     sendHandshake(protocol = 5) {
-        var Init = this.Buffer(5);
-        Init.setUint8(0, 254)
-        Init.setUint32(1, protocol, true);
+        var Init = new Writer(5);
+        Init.writeUInt8(254)
+        Init.writeUInt32(protocol, true);
         this.send(Init.buffer);
-
-        Init = this.Buffer(5);
-        Init.setUint8(0, 255);
-        Init.setUint32(1, 0, true);
+        Init = new Writer(5);
+        Init.writeUInt8(255);
+        Init.writeUInt32(0, true);
         this.send(Init.buffer);
     }
 
     sendJWTToken(token = '') {
         const tokenBuffer = new Writer(2 + token.length);
-        tokenBuffer.writeUint8(30);
-        tokenBuffer.writeUTF8String(token);
-        this.send(tokenBuffer.getBuffer);
+        tokenBuffer.writeUInt8(30);
+        tokenBuffer.writeString8(token);
+        this.send(tokenBuffer.buffer);
     }
 
     sendVerifyToken(token = '') {
         const tokenBuffer = new Writer(2);
-        tokenBuffer.writeUint8(32);
-        tokenBuffer.writeUTF8String(token);
-        this.send(tokenBuffer.getBuffer);
+        tokenBuffer.writeUInt8(32);
+        tokenBuffer.writeString8(token);
+        this.send(tokenBuffer.buffer);
     }
 
     onClose() {
-        this.handleReconnection();
+        console.log('d')
     }
 
     onError(error) {
-        // No error handling for now.
-        // console.error(error);
-        this.handleReconnection();
+        //console.error(error);
     }
 
-    disconnect() {
+    disconnect() {3
         this.startedBots = false;
         this.clearIntervals();
 
@@ -174,14 +220,6 @@ class Minion {
         }
     }
 
-    reconnect() {
-        this.clearIntervals();
-        this.agent = grab_proxy();
-
-        if (this.serverUrl && this.startedBots) {
-            this.connect(this.serverUrl);
-        }
-    }
 
     clearIntervals() {
         clearInterval(this.pingInterval);
@@ -189,12 +227,6 @@ class Minion {
         clearInterval(this.sendAuthentication);
     }
 
-    handleReconnection() {
-        if (!this.isReconnecting) {
-            this.isReconnecting = true;
-            this.reconnect();
-        }
-    }
 
     spawn() { }
 
@@ -208,24 +240,26 @@ class Minion {
         this.sendFeed();
     }
 
-    sendUint8(offset) {
-        const onebyte = this.Buffer(1);
-        onebyte.setUint8(0, offset);
-        this.send(onebyte);
+    sendUint8(data) {
+        const onebyte = new Writer(1);
+        onebyte.writeUInt8(data);
+        this.send(onebyte.buffer);
     }
 
-    sendMove(x, y) {
+    mouse(x, y) {
         if (!this.readyToSpawn) return;
         this.sendMouseMove(x, y);
     }
 
-    sendMouseMove(x, y) {
+    sendMouseMove(x = 0, y = 0) {
         const mouseBuffer = new Writer(13);
-        mouseBuffer.writeUint8(16);
+        mouseBuffer.writeUInt8(16);
         mouseBuffer.writeInt32(x);
         mouseBuffer.writeInt32(y);
-        mouseBuffer.writeUint32(0);
-        this.send(mouseBuffer.getBuffer);
+        mouseBuffer.writeUInt32(0);
+        this.send(mouseBuffer.buffer);
+        this.sendUint8(0x1a);
+        this.send(mouseBuffer.buffer);
     }
 
     sendChat(message) {
@@ -246,7 +280,7 @@ class Minion {
         }
     }
 };
+module.exports = Minion;
+//const test = new Minion()
 
-const test = new Minion()
-
-test.connect('wss://proxy.tricksplit.io/4600')
+//test.connect('wss://proxy.tricksplit.io/4600')

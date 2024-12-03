@@ -43,6 +43,7 @@ module.exports = class Writer {
             const n = e.charCodeAt(t);
             this.writeUInt8(n)
         }
+        this.writeUInt8(0);
     }
     writeLongString8(e) {
         this.writeUInt16(e.length);
@@ -52,11 +53,11 @@ module.exports = class Writer {
         }
     }
     writeString16(e) {
-        this.writeUInt8(e.length);
         for (let t = 0; t < e.length; t++) {
             const n = e.charCodeAt(t);
             this.writeUInt16(n)
         }
+        this.writeUInt16(0);
     }
     writeLongString16(e) {
         this.writeUInt16(e.length);

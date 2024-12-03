@@ -365,7 +365,7 @@ class TricksplitWasmInstance {
     }
   
     randomSeed() {
-      return 100000000 * Math.random() + 20000000;
+      return 0x5f5e100 * Math.random() + 0x1312d00;
     }
   }
 
