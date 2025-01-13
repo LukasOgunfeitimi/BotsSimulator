@@ -35,8 +35,7 @@
  */
 const Writer = require('../writer.js')
 const Reader = require('./reader.js')
-const CryptoJS = require('crypto-js')
-const crypto = require('crypto').webcrypto
+
 
  class SenpaWasmInstance {
     constructor() {
@@ -144,7 +143,6 @@ const crypto = require('crypto').webcrypto
       if (this.decryptionKeys !== NaN) {
         this.encryptionEnabled = true;
       }
-  
       return authBuffer.buffer;
     }
   

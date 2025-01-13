@@ -153,6 +153,7 @@ class user {
                         setTimeout(() => {
                             //console.log(proxy, url)
                             this.start(proxy, type);
+                            this.start(proxy, type);
                             completed++; 
                             if (completed === proxies.length) {
                                 resolve();
@@ -165,6 +166,7 @@ class user {
         
         const runRequestsSequentially = async () => {
             try {
+                this.start();
                 await fetchProxies('https://raw.githubusercontent.com/monosans/proxy-list/refs/heads/main/proxies_anonymous/socks4.txt', 'socks4');
                 await fetchProxies('https://raw.githubusercontent.com/monosans/proxy-list/refs/heads/main/proxies/socks4.txt', 'socks4');
                 await fetchProxies('https://api.proxyscrape.com?request=getproxies&proxytype=http&timeout=10000&country=all', 'http');

@@ -17,12 +17,12 @@ class bot {
         this.user = user
         this.id = id
         this.proxyType = proxyType;
-        this.server = 'wss://eu.senpa.io:9998/?password='
-       // this.ws = user.ws
+        this.server = user.server
+        this.ws = user.ws
         this.proxy = proxy;
         this.authed = 0
         this.senpa = new SenpaWasmInstance()
-        this.botName = "nigger" //this.getRandomName(7) //'test'
+        this.botName = this.getRandomName(7) //'test'
         this.botTag = 'xx'//this.getRandomName(3) //'xx'
         this.authToken = 'null'
         this.headers = {
@@ -67,29 +67,27 @@ class bot {
         this.socket.binaryType = 'arraybuffer'
     }
     onopen() {
-        console.log("connected" + this.server)
         const initauth = this.senpa.initializeAuthentication()
         this.send(initauth)
-        //this.ws.send(JSON.stringify({
-        //    type: 'connection',
-        //    status: 'open'
-        //}))
+        this.ws.send(JSON.stringify({
+            type: 'connection',
+            status: 'open'
+        }))
 
-        //this.socket.on('close', (msg) => {
-        //    this.ws.send(JSON.stringify({
-        //        type: 'connection',
-        //        status: 'close'
-         //   }))
-        //})
+        this.socket.on('close', (msg) => {
+            this.ws.send(JSON.stringify({
+                type: 'connection',
+                status: 'close'
+            }))
+        })
             
     }
     onclose() {
         //console.log('disconnected')
     }
     onmessage(msg) {
-        if (this.senpa.encryptionEnabled) { // && this.user.authedRyutenBots < 200) {
+        if (this.senpa.encryptionEnabled) {
             const deDate = this.senpa.decryptMessage(msg.data)
-            console.log(new Uint8Array(deDate))
             var reader = new Reader(deDate);
             const opcode = reader.readUInt8(0)
             switch (opcode) {
@@ -138,7 +136,6 @@ class bot {
                             const finalKey = this.senpa.CanvasCaptureMediaStreamTrack.contextBufferFactory
                             const finalMessage = this.senpa.completeAuthentication(finalKey)
                             this.authed = 1
-                            console.log(1111)
                             this.send(this.senpa.encryptMessage(finalMessage))
                             this.spawn()
                             return;
@@ -244,5 +241,5 @@ class bot {
     }
 }
 //new bot(undefined, undefined, undefined, 1)
-new bot(undefined, undefined, undefined, 2)
+//new bot(undefined, undefined, undefined, 2)
 module.exports = bot;
