@@ -22,7 +22,7 @@ class bot {
         this.proxy = proxy;
         this.authed = 0
         this.senpa = new SenpaWasmInstance()
-        this.botName = this.getRandomName(7) //'test'
+        this.botName = 'Araxy.co.uk'; this.getRandomName(7) //'test'
         this.botTag = 'xx'//this.getRandomName(3) //'xx'
         this.authToken = 'null'
         this.headers = {
@@ -90,6 +90,7 @@ class bot {
             const deDate = this.senpa.decryptMessage(msg.data)
             var reader = new Reader(deDate);
             const opcode = reader.readUInt8(0)
+           // console.log(new Uint8Array(reader.view.buffer))
             switch (opcode) {
                 case 8: // first
                     const data = new writer(1 + 2 * (this.authToken.length + 1))
@@ -138,6 +139,7 @@ class bot {
                             this.authed = 1
                             this.send(this.senpa.encryptMessage(finalMessage))
                             this.spawn()
+                            this.split();
                             return;
                             if (this.user.authedRyutenBots > 200) {
                                 this.close()
@@ -204,6 +206,7 @@ class bot {
         this.send(this.senpa.encryptMessage(tab.buffer))
         tab.setUint8(1,1)
         this.send(this.senpa.encryptMessage(tab.buffer))
+        setTimeout(() => this.split(), 30)
     }
     eject() {
         return;

@@ -15,6 +15,7 @@
 // @match        *.cell.sh/*
 // @match        *.agarix.ru/*
 // @match        *.ryuten.io/*
+// @match        *.senpa.io/*
 // @run-at       document-start
 // @grant        none
 // ==/UserScript==
@@ -57,6 +58,7 @@ class Client {
         setTimeout(() => {
             var box = document.getElementById('start')
             box.style.backgroundColor = 'red'
+            this.tryGetSenpa();
             box.addEventListener('click', (event) => {
                 if (box.style.backgroundColor === 'red') {
                     box.innerText = 'START'
@@ -66,8 +68,8 @@ class Client {
                             type: 'lxbauth',
                             origin: location.origin,
                             server: this.gameServer,
-                            tag: document.getElementById("team-input").value,
-                            pin: document.getElementById("pin-input").value
+                            //tag: document.getElementById("team-input").value,
+                            //pin: document.getElementById("pin-input").value
                         }));
                     }
                     // }
@@ -82,14 +84,19 @@ class Client {
             });
         }, 2000);
     }
+    tryGetSenpa() {
+        if (window.Socket.ws) this.gameServer = (window.Socket.ws.url);
+    }
     onopen() {
         this.ws.onclose = this.onclose.bind(this)
         this.log('Client: Success connecting.');
         setInterval(() => {
+            //console.log(this.x, this.y)
             this.send(JSON.stringify({
                 type: 'mouse',
                 x: this.x,
                 y : this.y
+
             }))
         }, 40)
         /*
@@ -199,7 +206,9 @@ class Client {
 */
             }
         }
-        //ez
+
+        /*
+        //ryuten mouse
         DataView.prototype.realSet = DataView.prototype.setUint16
         DataView.prototype.setUint16 = function() {
             this.realSet(...arguments)
@@ -212,6 +221,23 @@ class Client {
                     test.x = buffer | 0
                     break
                 case offset += 2:
+                    test.y = buffer | 0
+                    break
+            }
+        }
+        */
+        // senpa mouse
+        DataView.prototype.realSet = DataView.prototype.setInt32
+        DataView.prototype.setInt32 = function() {
+            this.realSet(...arguments)
+            const offset = 2 + this.getUint8(1) ^ 1;
+            const bufferOffset = arguments[0]
+            const buffer = arguments[1]
+            switch (bufferOffset) {
+                case offset:
+                    test.x = buffer | 0
+                    break
+                case offset + 4:
                     test.y = buffer | 0
                     break
             }

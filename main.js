@@ -158,7 +158,7 @@ class user {
                             if (completed === proxies.length) {
                                 resolve();
                             }
-                        }, index * 35);
+                        }, index * 5);
                     });
                 });
             });
@@ -200,7 +200,7 @@ class user {
                 this.bots.push(new(require('./protocols/cellsh'))(this, proxy))
                 break
             case 'https://ryuten.io':
-                this.bots.push(new(require('./protocols/ryuten'))(this, proxy))
+                this.bots.push(new(require('./protocols/ryuten'))(this, proxy, undefined, 0, proxytype))
                 break
             case 'https://dual-geno.me':
                 this.bots.push(new(require('./protocols/geno'))(this, proxy, boti))

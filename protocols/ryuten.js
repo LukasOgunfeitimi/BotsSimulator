@@ -5,6 +5,7 @@
 */
 const WebSocket = require('ws')
 const { SocksProxyAgent } = require('socks-proxy-agent');
+const { HttpProxyAgent } = require('http-proxy-agent');
 const { Ryuten } = require('../core/auth')
 const Writer = require('../core/writer');
 const Reader = require('../core/reader')
@@ -55,12 +56,13 @@ class Server {
     }
 }
 class bot {
-    constructor(user, proxy) {
+    constructor(user, proxy, headers, id, proxyType) {
         this.socket = null;
         this.user = user
         this.server = user.server
         this.origin = user.origin
         this.ws = user.ws
+        this.proxyType = proxyType;
         this.proxy = proxy;
         this.angle = 2 * Math.PI * Math.random()
         this.degree = Math.floor(Math.random() * 360)
@@ -116,8 +118,12 @@ class bot {
     }
     connect() {
         //if (!this.user.connectState) return
+        let proxy = null;
+        if (this.proxyType === "http") proxy = new HttpProxyAgent(`http://${this.proxy}`);
+        else if (this.proxyType === "socks4") proxy = new SocksProxyAgent(`socks4://${this.proxy}`);
+        else if (this.proxyType === "socks5") proxy = new SocksProxyAgent(`socks5://${this.proxy}`);
         this.socket = new WebSocket(this.server, {
-            agent: this.proxy ? new SocksProxyAgent(`socks://${this.proxy}`) : undefined,
+            agent: proxy, 
             headers: this.headers
         })
         this.socket.binaryType = 'arraybuffer'
@@ -304,6 +310,7 @@ class bot {
         tab.setUint8(1,1)
         this.send(tab.buffer)
         return
+        /*
         const cells = this.SERVER.player?.player?.cells
         if (cells === undefined || cells !== []) return
         var data = {x:0,y:0}
