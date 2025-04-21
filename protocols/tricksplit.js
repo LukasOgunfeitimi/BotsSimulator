@@ -1,5 +1,5 @@
 const WebSocket = require('ws')
-const TricksplitWasmInstance = require('../core/ts.js')
+const TricksplitWasmInstance = require('../core/tricksplit.js')
 
 const { SocksProxyAgent } = require('socks-proxy-agent')
 const { HttpProxyAgent } = require('http-proxy-agent')

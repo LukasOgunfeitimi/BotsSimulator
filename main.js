@@ -153,12 +153,17 @@ class user {
                         setTimeout(() => {
                             //console.log(proxy, url)
                             this.start(proxy, type);
-                            this.start(proxy, type);
+                            setTimeout(()=>{
+                                this.start(proxy, type);
+                            }, 500);
+                            setTimeout(()=>{
+                                this.start(proxy, type);
+                            }, 1000);
                             completed++; 
                             if (completed === proxies.length) {
                                 resolve();
                             }
-                        }, index * 5);
+                        }, index * 50);
                     });
                 });
             });
@@ -167,11 +172,14 @@ class user {
         const runRequestsSequentially = async () => {
             try {
                 this.start();
+                this.start();
+                await fetchProxies('https://api.proxyscrape.com?request=getproxies&proxytype=socks4&timeout=10000&country=all', 'socks4');
+                await fetchProxies('https://raw.githubusercontent.com/TheSpeedX/PROXY-List/master/socks4.txt', 'socks4');
+                await fetchProxies('https://raw.githubusercontent.com/ErcinDedeoglu/proxies/refs/heads/main/proxies/socks4.txt', 'socks4');
+                await fetchProxies('https://github.com/ErcinDedeoglu/proxies/blob/main/proxies/socks5.txt', 'socks5');
                 await fetchProxies('https://raw.githubusercontent.com/monosans/proxy-list/refs/heads/main/proxies_anonymous/socks4.txt', 'socks4');
                 await fetchProxies('https://raw.githubusercontent.com/monosans/proxy-list/refs/heads/main/proxies/socks4.txt', 'socks4');
                 await fetchProxies('https://api.proxyscrape.com?request=getproxies&proxytype=http&timeout=10000&country=all', 'http');
-                await fetchProxies('https://raw.githubusercontent.com/TheSpeedX/PROXY-List/master/socks4.txt', 'socks4');
-                await fetchProxies('https://api.proxyscrape.com?request=getproxies&proxytype=socks4&timeout=10000&country=all', 'socks4');
             } catch (error) {
                 console.error('Error fetching proxies:', error);
             }

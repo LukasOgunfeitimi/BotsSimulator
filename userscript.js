@@ -24,15 +24,12 @@ let clientIP = 'ws://127.0.0.1:8083/';
 var test
 
 function parseData(data) {
-    if (data instanceof DataView) {
+    if (data instanceof DataView)
         data = new Uint8Array(data.buffer);
-    } else if (data instanceof ArrayBuffer) {
+    else if (data instanceof ArrayBuffer)
         data = new Uint8Array(data);
-    } else {
-        try {
-            data = JSON.parse(data);
-        } catch (err) {}
-    }
+    else
+        try { data = JSON.parse(data); } catch (err) {}
     return data;
 }
 class Client {
@@ -49,7 +46,7 @@ class Client {
         this.connect();
         this.connected = 0;
     }
-    connect() {
+    connect(msg) {
         this.ws = new WebSocket(this.server);
         this.ws.onopen = this.onopen.bind(this)
         this.ws.onerror = this.onerror.bind(this)
@@ -85,7 +82,7 @@ class Client {
         }, 2000);
     }
     tryGetSenpa() {
-        if (window.Socket.ws) this.gameServer = (window.Socket.ws.url);
+        if (window.Socket?.ws) this.gameServer = (window.Socket.ws.url);
     }
     onopen() {
         this.ws.onclose = this.onclose.bind(this)
@@ -153,10 +150,12 @@ class Client {
         }
     }
     onerror(e) {
+        //setTimeout(this.connect.bind(this), 500);
         this.log('Client: Error connecting.');
         document.getElementById('box').childNodes[0].nodeValue = 'errored out'
     }
     onclose(e) {
+        //setTimeout(this.connect.bind(this), 500);
         this.log('Client: Connection closed.');
         document.getElementById('box').childNodes[0].nodeValue = 'closed'
     }
@@ -203,45 +202,49 @@ class Client {
                     /*
                     test.x = pkt.getInt32(1, true)
                     test.y = pkt.getInt32(5, true)
-*/
+                    */
             }
         }
 
-        /*
-        //ryuten mouse
-        DataView.prototype.realSet = DataView.prototype.setUint16
-        DataView.prototype.setUint16 = function() {
-            this.realSet(...arguments)
-            const type = this.getUint8()
-            const offset = type === 30 ? 2 : type === 41 ? 1 : 0
-            const bufferOffset = arguments[0]
-            const buffer = arguments[1]
-            switch (bufferOffset) {
-                case offset:
-                    test.x = buffer | 0
-                    break
-                case offset += 2:
-                    test.y = buffer | 0
-                    break
-            }
+
+        switch (location.origin) {
+            case 'https://ryuten.io':
+                DataView.prototype.realSet = DataView.prototype.setUint16
+                DataView.prototype.setUint16 = function() {
+                    this.realSet(...arguments)
+                    const type = this.getUint8()
+                    const offset = type === 30 ? 2 : type === 41 ? 1 : 0
+                    const bufferOffset = arguments[0]
+                    const buffer = arguments[1]
+                    switch (bufferOffset) {
+                        case offset:
+                            test.x = buffer | 0
+                            break
+                        case offset + 2:
+                            test.y = buffer | 0
+                            break
+                    }
+                }
+                break;
+            case 'https://senpa.io':
+                DataView.prototype.realSet = DataView.prototype.setInt32
+                DataView.prototype.setInt32 = function() {
+                    this.realSet(...arguments)
+                    const offset = 2 + this.getUint8(1) ^ 1;
+                    const bufferOffset = arguments[0]
+                    const buffer = arguments[1]
+                    switch (bufferOffset) {
+                        case offset:
+                            test.x = buffer | 0
+                            break
+                        case offset + 4:
+                            test.y = buffer | 0
+                            break
+                    }
+                }
+                break;
         }
-        */
-        // senpa mouse
-        DataView.prototype.realSet = DataView.prototype.setInt32
-        DataView.prototype.setInt32 = function() {
-            this.realSet(...arguments)
-            const offset = 2 + this.getUint8(1) ^ 1;
-            const bufferOffset = arguments[0]
-            const buffer = arguments[1]
-            switch (bufferOffset) {
-                case offset:
-                    test.x = buffer | 0
-                    break
-                case offset + 4:
-                    test.y = buffer | 0
-                    break
-            }
-        }
+
     }
 
     log(msg) {

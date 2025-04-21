@@ -22,7 +22,7 @@ class bot {
         this.proxy = proxy;
         this.authed = 0
         this.senpa = new SenpaWasmInstance()
-        this.botName = 'Araxy.co.uk'; this.getRandomName(7) //'test'
+        this.botName = 'Araxy.co.uk';// this.getRandomName(7) //'test'
         this.botTag = 'xx'//this.getRandomName(3) //'xx'
         this.authToken = 'null'
         this.headers = {
@@ -228,6 +228,7 @@ class bot {
       setTimeout(() => this.ping(), 1e3)
     }
     onerror(err) {
+        setTimeout(this.connect.bind(this), 2000);
        //console.log(err)
     };
 
