@@ -198,12 +198,13 @@ class Client {
             else if (pkt instanceof DataView) pkt = pkt;
             else pkt = new DataView(pkt.buffer);
             if (test.gameServer !== this.url) test.gameServer = this.url
+            //console.log(new Uint8Array(pkt.buffer))
             switch (pkt.getUint8(0, true)) {
                 case 16:
                 /*
-                test.x = pkt.getInt32(1, true)
-                test.y = pkt.getInt32(5, true)
-                */
+            test.x = pkt.getInt32(1, true)
+            test.y = pkt.getInt32(5, true)
+            */
             }
         }
 
@@ -248,16 +249,16 @@ class Client {
                 DataView.prototype.realSet = DataView.prototype.setUint16
                 DataView.prototype.setUint16 = function () {
                     this.realSet(...arguments)
-                    const type = this.getUint8()
-                    const offset = 1;
+                    const offset = 2 + this.getUint8(1) ^ 1;
                     const bufferOffset = arguments[0]
                     const buffer = arguments[1]
-                    if (buffer === 1) return;
                     switch (bufferOffset) {
                         case offset:
+                            console.log(buffer)
                             test.x = buffer | 0
                             break
                         case offset + 2:
+                            console.log(buffer)
                             test.y = buffer | 0
                             break
                     }
