@@ -103,7 +103,7 @@ class bot {
     };
     spawn() {
         this.send(new Uint8Array([1]).buffer)
-        this.send(new Uint8Array([0, 2]).buffer) 
+        this.send(new Uint8Array([0, 2]).buffer)
         var playBuffer = new writer()
         playBuffer.int(8, 0)
         playBuffer.int(8, 1)
@@ -112,7 +112,7 @@ class bot {
         playBuffer2.int(8, 0)
         playBuffer2.int(8, 2)
         this.send(playBuffer2.arraybuffer)
-        setTimeout(() => this.spawn(), 100)      
+        setTimeout(() => this.spawn(), 100)
     }
     mouse(x, y) {
         var mouse = new writer()
@@ -126,7 +126,7 @@ class bot {
         mouse2.int(8, 2)
         mouse2.int(16, x)
         mouse2.int(16, y)
-        this.send(mouse2.arraybuffer)   
+        this.send(mouse2.arraybuffer)
     }
     split() {
         this.send([9, 1])
@@ -157,7 +157,7 @@ class bot {
         this.socket.close()
     }
     send(buf) {
-        if (this.socket && this.socket.readyState === WebSocket.OPEN) {  
+        if (this.socket && this.socket.readyState === WebSocket.OPEN) {
             this.socket.send(buf)
         }
     }

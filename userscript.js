@@ -16,6 +16,7 @@
 // @match        *.agarix.ru/*
 // @match        *.ryuten.io/*
 // @match        *.senpa.io/*
+// @match        *.astrio.io/*
 // @run-at       document-start
 // @grant        none
 // ==/UserScript==
@@ -29,7 +30,7 @@ function parseData(data) {
     else if (data instanceof ArrayBuffer)
         data = new Uint8Array(data);
     else
-        try { data = JSON.parse(data); } catch (err) {}
+        try { data = JSON.parse(data); } catch (err) { }
     return data;
 }
 class Client {
@@ -92,7 +93,7 @@ class Client {
             this.send(JSON.stringify({
                 type: 'mouse',
                 x: this.x,
-                y : this.y
+                y: this.y
 
             }))
         }, 40)
@@ -188,7 +189,7 @@ class Client {
     }
     startMoving() {
         WebSocket.prototype.realSend = WebSocket.prototype.send;
-        WebSocket.prototype.send = function(pkt) {
+        WebSocket.prototype.send = function (pkt) {
             this.realSend(pkt);
             if (typeof pkt == 'string') return;
             if (this.url.includes('localhost')) return;
@@ -199,10 +200,10 @@ class Client {
             if (test.gameServer !== this.url) test.gameServer = this.url
             switch (pkt.getUint8(0, true)) {
                 case 16:
-                    /*
-                    test.x = pkt.getInt32(1, true)
-                    test.y = pkt.getInt32(5, true)
-                    */
+                /*
+                test.x = pkt.getInt32(1, true)
+                test.y = pkt.getInt32(5, true)
+                */
             }
         }
 
@@ -210,7 +211,7 @@ class Client {
         switch (location.origin) {
             case 'https://ryuten.io':
                 DataView.prototype.realSet = DataView.prototype.setUint16
-                DataView.prototype.setUint16 = function() {
+                DataView.prototype.setUint16 = function () {
                     this.realSet(...arguments)
                     const type = this.getUint8()
                     const offset = type === 30 ? 2 : type === 41 ? 1 : 0
@@ -228,7 +229,7 @@ class Client {
                 break;
             case 'https://senpa.io':
                 DataView.prototype.realSet = DataView.prototype.setInt32
-                DataView.prototype.setInt32 = function() {
+                DataView.prototype.setInt32 = function () {
                     this.realSet(...arguments)
                     const offset = 2 + this.getUint8(1) ^ 1;
                     const bufferOffset = arguments[0]
@@ -243,6 +244,24 @@ class Client {
                     }
                 }
                 break;
+            case 'https://astrio.io':
+                DataView.prototype.realSet = DataView.prototype.setUint16
+                DataView.prototype.setUint16 = function () {
+                    this.realSet(...arguments)
+                    const type = this.getUint8()
+                    const offset = 1;
+                    const bufferOffset = arguments[0]
+                    const buffer = arguments[1]
+                    if (buffer === 1) return;
+                    switch (bufferOffset) {
+                        case offset:
+                            test.x = buffer | 0
+                            break
+                        case offset + 2:
+                            test.y = buffer | 0
+                            break
+                    }
+                }
         }
 
     }
@@ -418,7 +437,7 @@ if (location.origin.includes('gota.io')) {
             clearInterval(captchaInt)
         }
     })
-    }
+}
 setTimeout(() => {
     test = new Client(clientIP);
 }, 3000);
